@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn    = document.getElementById('nextBtn');
     const pageIndicator = document.getElementById('pageIndicator');
     const pageSound  = document.getElementById('pageSound');
+    const bgMusic    = document.getElementById('bgMusic');
+    if (bgMusic) {
+        bgMusic.volume = 0.5;
+        bgMusic.play().catch(() => {});
+    }
 
     const allImages = [
         'img/Contacto.jpeg',
@@ -47,14 +52,28 @@ document.addEventListener('DOMContentLoaded', () => {
             right: { img: allImages[5], desc: 'Citas pendientes con Mi amor 👩🏼‍🤝‍👨🏻', text: 'Los pequeños momentos crean grandes experiencias.\n\nQuiero hacer todo, pero contigo ❤️' }
         },
         {
-            left:  { img: allImages[6], desc: 'Siempre quiero que seas tú, solo tú✨', text: 'No importa que haga, siempre pienso en ti. 🧠💖' },
-            right: { img: allImages[7], desc: 'Nuestra siguiente cita!\nResident Evil en IMAX!🧟‍♂️🧟‍♀️', text: 'No importa si te veo 1 o 24 horas, si estamos en la plaza o en el parque...\nLo unico que quiero es ser felíz a tu lado ❤️‍🔥'}
+            left: { img: allImages[7], desc: 'Nuestra siguiente cita!\nResident Evil en IMAX!🧟‍♂️🧟‍♀️', text: 'No importa si te veo 1 o 24 horas, si estamos en la plaza o en el parque...\nLo unico que quiero es ser felíz a tu lado ❤️‍🔥'},
+            right:  { img: allImages[6], desc: 'Siempre quiero que seas tú, solo tú✨', text: 'No importa que haga, siempre pienso en ti. 🧠💖' },
         },
+        // Nuevas páginas
+        {
+            left: { type: 'text', text: 'POR ESO.........' },
+            right: { type: 'text', text: 'Me encantaría hacerte saber cuando siento por ti,\npero para eso requiero tiempo a tu lado,\ny quisiera saber si quieres ser mi novia.' }
+        },
+        {
+            left: { type: 'blank' },
+            right: { type: 'question', text: 'Aceptas?', yesText: 'Sí', noText: 'No' }
+        },
+        {
+            left: { type: 'result', img: allImages[1], desc: 'Entonces hagamos realidad todos esos sueños juntos y sigamos escribiendo... 💕👩🏼‍🤝‍👨🏻✨' },
+            right: { type: 'title-page', title: 'Nuestra Historia de Amor', subtitle: 'Un libro escrito con el corazón... y con código' },
+        }
     ];
 
     const numSpreads = spreads.length;
     let currentSpread = 0;
     let isFlipping = false;
+    let flipTimeout = null;
 
     const noteColors = ['note-yellow', 'note-pink', 'note-blue', 'note-green', 'note-lavender'];
 
@@ -186,6 +205,86 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (pageData.type === 'text') {
+            const textDiv = document.createElement('div');
+            textDiv.className = 'page-text-content';
+            textDiv.textContent = pageData.text || '';
+            container.appendChild(textDiv);
+            requestAnimationFrame(() => textDiv.classList.add('appear'));
+            return;
+        }
+
+        if (pageData.type === 'question') {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-box';
+            questionDiv.innerHTML = `
+                <p class="question-text">${pageData.text || ''}</p>
+                <div class="question-buttons">
+                    <button class="btn-yes">${pageData.yesText || 'Sí'}</button>
+                    <button class="btn-no">${pageData.noText || 'No'}</button>
+                </div>
+            `;
+            container.appendChild(questionDiv);
+            requestAnimationFrame(() => questionDiv.classList.add('appear'));
+
+            const btnYes = questionDiv.querySelector('.btn-yes');
+            const btnNo = questionDiv.querySelector('.btn-no');
+            let noClickCount = 0;
+
+            btnYes.addEventListener('click', () => {
+                if (isFlipping) return;
+                const existingError = container.querySelector('.error-message');
+                if (existingError) existingError.remove();
+                btnNo.textContent = pageData.noText || 'No';
+                goNext();
+            });
+
+            btnNo.addEventListener('click', () => {
+                if (isFlipping) return;
+                noClickCount++;
+                if (noClickCount === 1) {
+                    const existingError = container.querySelector('.error-message');
+                    if (existingError) existingError.remove();
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = 'No es posible realizar la función';
+                    container.appendChild(errorDiv);
+                    // keep button text as 'No'
+                } else if (noClickCount >= 2) {
+                    container.innerHTML = '';
+                    const jokeDiv = document.createElement('div');
+                    jokeDiv.className = 'joke-message';
+                    jokeDiv.textContent = 'Era broma, eres libre :)';
+                    container.appendChild(jokeDiv);
+                    requestAnimationFrame(() => jokeDiv.classList.add('appear'));
+                    btnYes.disabled = true;
+                    btnNo.disabled = true;
+                    btnNo.textContent = 'Era broma, eres libre :)';
+                }
+            });
+
+            return;
+        }
+
+        if (pageData.type === 'result') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'photo-wrapper';
+            wrapper.style.setProperty('--rot', `${(Math.random() * 6 - 3).toFixed(1)}deg`);
+            const img = document.createElement('img');
+            img.className = 'photo';
+            img.src = pageData.img;
+            img.alt = pageData.desc || '';
+            img.loading = 'lazy';
+            wrapper.appendChild(img);
+            const desc = document.createElement('div');
+            desc.className = 'photo-desc';
+            desc.textContent = pageData.desc || '';
+            wrapper.appendChild(desc);
+            container.appendChild(wrapper);
+            requestAnimationFrame(() => wrapper.classList.add('appear'));
+            return;
+        }
+
         const noteAbove = Math.random() < 0.5;
 
         const wrapper = document.createElement('div');
@@ -234,9 +333,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateUI() {
         const atStart = currentSpread === 0;
         const atEnd   = currentSpread === numSpreads - 1;
+        const currentLeft = spreads[currentSpread].left;
+        const currentRight = spreads[currentSpread].right;
+        const isQuestion = currentLeft.type === 'question' || currentRight.type === 'question';
 
         prevBtn.classList.toggle('btn-hidden', atStart || isFlipping);
-        nextBtn.classList.toggle('btn-hidden', atEnd || isFlipping);
+        nextBtn.classList.toggle('btn-hidden', atEnd || isFlipping || isQuestion);
 
         pageIndicator.textContent = `${currentSpread + 1} / ${numSpreads}`;
     }
@@ -264,16 +366,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         pageRight.classList.add('flipping-forward');
 
-        pageRight.addEventListener('transitionend', function handler(e) {
+        const handler = function(e) {
             if (e.propertyName !== 'transform') return;
+            clearTimeout(flipTimeout);
             pageRight.removeEventListener('transitionend', handler);
-
             resetPageTransform(pageRight);
             currentSpread = nextIdx;
             loadSpread();
             isFlipping = false;
             updateUI();
-        }, { once: false });
+        };
+
+        pageRight.addEventListener('transitionend', handler, { once: false });
+
+        flipTimeout = setTimeout(() => {
+            if (isFlipping) {
+                pageRight.removeEventListener('transitionend', handler);
+                resetPageTransform(pageRight);
+                currentSpread = nextIdx;
+                loadSpread();
+                isFlipping = false;
+                updateUI();
+            }
+        }, 800);
     }
 
     function goPrev() {
@@ -287,16 +402,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         pageLeft.classList.add('flipping-backward');
 
-        pageLeft.addEventListener('transitionend', function handler(e) {
+        const handler = function(e) {
             if (e.propertyName !== 'transform') return;
+            clearTimeout(flipTimeout);
             pageLeft.removeEventListener('transitionend', handler);
-
             resetPageTransform(pageLeft);
             currentSpread = prevIdx;
             loadSpread();
             isFlipping = false;
             updateUI();
-        }, { once: false });
+        };
+
+        pageLeft.addEventListener('transitionend', handler, { once: false });
+
+        flipTimeout = setTimeout(() => {
+            if (isFlipping) {
+                pageLeft.removeEventListener('transitionend', handler);
+                resetPageTransform(pageLeft);
+                currentSpread = prevIdx;
+                loadSpread();
+                isFlipping = false;
+                updateUI();
+            }
+        }, 800);
     }
 
     loadSpread();
