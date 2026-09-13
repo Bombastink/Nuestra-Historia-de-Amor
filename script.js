@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const spreads = [
         {
-            left: { type: 'cover-img', img: 'img/mulan.jpeg'},
+            left: { type: 'cover-img', img: 'img/Mulan.jpeg'},
             right: { type: 'title-page', title: 'Nuestra Historia de Amor', subtitle: 'Un libro escrito con el corazón... y con código' }
         },
         {
