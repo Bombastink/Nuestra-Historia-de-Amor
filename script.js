@@ -27,12 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
         'img/Gil_bb.jpeg',
         'img/Kiara_bb.jpeg',
         'img/Paises.jpeg',
-        'img/Mulan.jpeg'
+        'img/Mulan.jpeg',
     ];
 
     const spreads = [
         {
-            left: { type: 'cover-img', img: 'img/mulan.png'},
+            left: { type: 'cover-img', img: 'img/mulan.jpeg'},
             right: { type: 'title-page', title: 'Nuestra Historia de Amor', subtitle: 'Un libro escrito con el corazón... y con código' }
         },
         {
@@ -432,6 +432,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nextBtn.addEventListener('click', goNext);
     prevBtn.addEventListener('click', goPrev);
+
+    // Modal de imagen ampliada
+    const imageModal = document.getElementById('imageModal');
+    const modalImg = document.querySelector('.image-modal-content');
+    const modalClose = document.querySelector('.image-modal-close');
+
+    function openModal(src) {
+        if (!imageModal || !modalImg) return;
+        modalImg.src = src;
+        imageModal.classList.add('show');
+    }
+
+    function closeModal() {
+        if (!imageModal || !modalImg) return;
+        imageModal.classList.remove('show');
+        modalImg.src = '';
+    }
+
+    if (modalClose) modalClose.addEventListener('click', (e) => { e.stopPropagation(); closeModal(); });
+    if (imageModal) imageModal.addEventListener('click', closeModal);
+    if (modalImg) modalImg.addEventListener('click', (e) => e.stopPropagation());
+
+    // Asignar clic a todas las imágenes del libro (incluyendo portada)
+    document.addEventListener('click', (e) => {
+        if (imageModal && imageModal.classList.contains('show')) return;
+        const img = e.target.closest('img');
+        if (!img) return;
+        const src = img.getAttribute('src');
+        if (src) openModal(src);
+    });
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight') goNext();
