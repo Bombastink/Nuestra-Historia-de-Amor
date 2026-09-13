@@ -27,6 +27,7 @@
         <button id="prevBtn" aria-label="Página anterior">&#9664; Anterior</button>
         <span id="pageIndicator">1 / 5</span>
         <button id="nextBtn" aria-label="Página siguiente">Siguiente &#9654;</button>
+        <button id="musicBtn" aria-label="Música">🎵</button>
     </div>
     <audio id="pageSound" preload="auto">
         <source src="audio/page-turn.mp3" type="audio/mpeg">
@@ -37,6 +38,10 @@
     <div id="imageModal" class="image-modal">
         <span class="image-modal-close">&times;</span>
         <img class="image-modal-content" src="" alt="Imagen ampliada">
+    </div>
+    <div id="textModal" class="text-modal">
+        <span class="text-modal-close">&times;</span>
+        <div class="text-modal-content"></div>
     </div>
     <script src="script.js"></script>
 </body>

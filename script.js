@@ -433,6 +433,41 @@ document.addEventListener('DOMContentLoaded', () => {
     nextBtn.addEventListener('click', goNext);
     prevBtn.addEventListener('click', goPrev);
 
+    const musicBtn = document.getElementById('musicBtn');
+
+    function updateMusicButton() {
+        if (!bgMusic || !musicBtn) return;
+        if (bgMusic.paused) {
+            musicBtn.textContent = '🔇';
+        } else {
+            musicBtn.textContent = '🎵';
+        }
+    }
+
+    function toggleMusic() {
+        if (!bgMusic) return;
+        if (bgMusic.paused) {
+            bgMusic.play().then(() => updateMusicButton()).catch(() => {});
+        } else {
+            bgMusic.pause();
+            updateMusicButton();
+        }
+    }
+
+    if (musicBtn) musicBtn.addEventListener('click', toggleMusic);
+
+    // Reproducir música de fondo en el primer clic del usuario (si no se pudo reproducir automáticamente)
+    function tryPlayBgMusic() {
+        if (!bgMusic) return;
+        if (bgMusic.paused) {
+            bgMusic.play().then(() => updateMusicButton()).catch(() => {});
+        }
+    }
+
+    document.addEventListener('click', tryPlayBgMusic, { once: true });
+
+    updateMusicButton();
+
     // Modal de imagen ampliada
     const imageModal = document.getElementById('imageModal');
     const modalImg = document.querySelector('.image-modal-content');
@@ -453,6 +488,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modalClose) modalClose.addEventListener('click', (e) => { e.stopPropagation(); closeModal(); });
     if (imageModal) imageModal.addEventListener('click', closeModal);
     if (modalImg) modalImg.addEventListener('click', (e) => e.stopPropagation());
+
+    // Modal de texto ampliado
+    const textModal = document.getElementById('textModal');
+    const textModalContent = document.querySelector('.text-modal-content');
+    const textModalClose = document.querySelector('.text-modal-close');
+
+    function openTextModal(text) {
+        if (!textModal || !textModalContent) return;
+        textModalContent.textContent = text;
+        textModal.classList.add('show');
+    }
+
+    function closeTextModal() {
+        if (!textModal) return;
+        textModal.classList.remove('show');
+    }
+
+    if (textModalClose) textModalClose.addEventListener('click', (e) => { e.stopPropagation(); closeTextModal(); });
+    if (textModal) textModal.addEventListener('click', closeTextModal);
+    if (textModalContent) textModalContent.addEventListener('click', (e) => e.stopPropagation());
+
+    // Clic en notas para ampliar texto
+    document.addEventListener('click', (e) => {
+        const note = e.target.closest('.note');
+        if (!note) return;
+        const text = note.textContent || '';
+        if (!text) return;
+        openTextModal(text);
+    });
 
     // Asignar clic a todas las imágenes del libro (incluyendo portada)
     document.addEventListener('click', (e) => {
