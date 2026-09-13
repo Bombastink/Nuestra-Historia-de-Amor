@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'img/Gil_bb.jpeg',
         'img/Kiara_bb.jpeg',
         'img/Paises.jpeg',
-        'img/Mulan.png'
+        'img/Mulan.jpeg'
     ];
 
     const spreads = [
